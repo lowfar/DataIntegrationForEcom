@@ -11,8 +11,12 @@
    RunTRansfer.ps1
 #>
 
-#Configuration file
-[string]$ConfiguartionFile = ""
+#Parameters
+Param(
+ [Parameter(Mandatory=$true,Position=1)]
+  [String]$ConfiguartionFile
+)
+
 #Varibales populated from the configuration file.
 [string]$Active = ""
 [int]$ProcessId = 0
@@ -26,8 +30,6 @@
 #Load FileTransferFunctions
 . D:\HIP\Scripts\FileTransferFunctions.ps1
 
-#Set Configuration file using full path
-$ConfiguartionFile = "D:\HIP\Settings\HIPTest.config"
 
 #Populate variables from Configuration File, uses function from FileTransferFunctions.ps1
 $Active = GetConfigProperty -path $ConfiguartionFile -setting ProcessSettings -property Run
