@@ -6,15 +6,19 @@
    This is the main task of the Hybris Integration Process (HIP). The script uses the HIPS configuartion
    file to get execution parameters for ROBOCOPY. It also initiates monitoring processes.
 .PARAMETER <paramName>
-   Non
+   <ConfigurationFile> Full Path of the configuration file
+   <IsLocalCopyRequired> Y or N. Specify if copy of files transfered is required
 .EXAMPLE
-   RunTRansfer.ps1
+	#Example 1: Runs Transfer with Transfer.Config and requests and additional ROBOCOPY of the files to keep a copy of files transfered 
+   	RunTransfer.ps1 -ConfigurationFile D:\HIP\Settings\Transfer.Config Y
 #>
 
 #Parameters
 Param(
  [Parameter(Mandatory=$true,Position=1)]
-  [String]$ConfiguartionFile
+  [String]$ConfigurationFile,
+ [Parameter(Mandatory=$true,Position=2)]
+  [String]$IsLocalCopyRequired
 )
 
 #Varibales populated from the configuration file.
@@ -32,13 +36,13 @@ Param(
 
 
 #Populate variables from Configuration File, uses function from FileTransferFunctions.ps1
-$Active = GetConfigProperty -path $ConfiguartionFile -setting ProcessSettings -property Run
-$SourcePath = GetConfigProperty -path $ConfiguartionFile -setting TransferSettings -property Source
-$DestinationPath = GetConfigProperty -path $ConfiguartionFile -setting TransferSettings -property Destination
-$ProcessId = GetConfigProperty -path $ConfiguartionFile -setting ProcessSettings -Property ProcessId
-$CopyDestination = GetConfigProperty -path $ConfiguartionFile -setting TransferSettings -property CopyTo
-$RobocopyLog = GetConfigProperty  -path $ConfiguartionFile -setting ProcessSettings -property LogFileLocation
-$RobocopyCopyActionLog = GetConfigProperty  -path $ConfiguartionFile -setting ProcessSettings -property LogFileLocationCopyAction
+$Active = GetConfigProperty -path $ConfigurationFile -setting ProcessSettings -property Run
+$SourcePath = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property Source
+$DestinationPath = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property Destination
+$ProcessId = GetConfigProperty -path $ConfigurationFile -setting ProcessSettings -Property ProcessId
+$CopyDestination = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property CopyTo
+$RobocopyLog = GetConfigProperty  -path $ConfigurationFile -setting ProcessSettings -property LogFileLocation
+$RobocopyCopyActionLog = GetConfigProperty  -path $ConfigurationFile -setting ProcessSettings -property LogFileLocationCopyAction
 
 #Formated date and time used in generating Logfile names
 $FileDatetime = (Get-Date ).ToUniversalTime().ToString("yyyyMMddThhmmssZ")
@@ -67,10 +71,18 @@ elseif ($Active -eq "Yes")
 		# Check there are files to transfer. If there are then run ROBOCOPY commands
 		if ($SourceFileCount -gt 0 )
 		{ 
-			#First ROBOCOPY copies the files for processing
-			ROBOCOPY $SourcePath $DestinationPath /MT:32 /LOG:$RobocopyLog 
-			#Second ROBOCOPY moves (deletes from source) files to a copy location
-			ROBOCOPY $SourcePath $CopyDestination /MOV /MT:32 /LOG:$RobocopyCopyActionLog
+			#Is a local copy of the files transfered needed
+			if ($IsLocalCopyRequired -eq "Y")
+				{
+					#First ROBOCOPY copies the files for processing
+					ROBOCOPY $SourcePath $DestinationPath /MT:32 /LOG:$RobocopyLog 
+					#Second ROBOCOPY moves (deletes from source) files to a copy location
+					ROBOCOPY $SourcePath $CopyDestination /MOV /MT:32 /LOG:$RobocopyCopyActionLog
+				}
+			elseif ($IsLocalCopyRequired -eq "N")
+				{
+					ROBOCOPY $SourcePath $DestinationPath /MOV /MT:32 /LOG:$RobocopyLog
+				}
 			#Update monitoring log
 			LogUpdateTransferEnd -HistoryId $HistoryId -LogFile $RobocopyLog
 		}#run if files exist
