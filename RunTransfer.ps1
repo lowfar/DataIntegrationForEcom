@@ -27,7 +27,6 @@ Param(
 [String]$SourcePath = ""
 [String]$DestinationPath  = ""
 [String]$RobocopyLog = ""
-#File selection for ROBOCOPY
 [string]$FileSector = ""
 #Variables used to control execution
 [String]$FileDatetime = ""
@@ -45,6 +44,7 @@ $ProcessId = GetConfigProperty -path $ConfigurationFile -setting ProcessSettings
 $CopyDestination = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property CopyTo
 $RobocopyLog = GetConfigProperty  -path $ConfigurationFile -setting ProcessSettings -property LogFileLocation
 $RobocopyCopyActionLog = GetConfigProperty  -path $ConfigurationFile -setting ProcessSettings -property LogFileLocationCopyAction
+$FileSector = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property File
 
 #Formated date and time used in generating Logfile names
 $FileDatetime = (Get-Date ).ToUniversalTime().ToString("yyyyMMddThhmmssZ")
