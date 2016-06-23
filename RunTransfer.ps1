@@ -27,7 +27,7 @@ Param(
 [String]$SourcePath = ""
 [String]$DestinationPath  = ""
 [String]$RobocopyLog = ""
-[string]$FileSector = ""
+[string]$FileSelector = ""
 #Variables used to control execution
 [String]$FileDatetime = ""
 [int]$SourceFileCount = 0
@@ -44,13 +44,12 @@ $ProcessId = GetConfigProperty -path $ConfigurationFile -setting ProcessSettings
 $CopyDestination = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property CopyTo
 $RobocopyLog = GetConfigProperty  -path $ConfigurationFile -setting ProcessSettings -property LogFileLocation
 $RobocopyCopyActionLog = GetConfigProperty  -path $ConfigurationFile -setting ProcessSettings -property LogFileLocationCopyAction
-$FileSector = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property File
+$FileSelector = GetConfigProperty -path $ConfigurationFile -setting TransferSettings -property File
 
 #Formated date and time used in generating Logfile names
 $FileDatetime = (Get-Date ).ToUniversalTime().ToString("yyyyMMddThhmmssZ")
 
-#File Selection
-$FileSector = "Load*.*"
+
 
 
 #check transfer is active , this is a value set in the configuration file
@@ -82,13 +81,13 @@ elseif ($Active -eq "Yes")
 				{
 					
 					#First ROBOCOPY copies the files for processing
-					ROBOCOPY $SourcePath $FileSector $DestinationPath /MT:32 /LOG:$RobocopyLog 
+					ROBOCOPY $SourcePath $FileSelector $DestinationPath /MT:32 /LOG:$RobocopyLog 
 					#Second ROBOCOPY moves (deletes from source) files to a copy location
-					ROBOCOPY $SourcePath $FileSector $CopyDestination /MOV /MT:32 /LOG:$RobocopyCopyActionLog
+					ROBOCOPY $SourcePath $FileSelector $CopyDestination /MOV /MT:32 /LOG:$RobocopyCopyActionLog
 				}
 			elseif ($IsLocalCopyRequired -eq "N")
 				{
-					ROBOCOPY $SourcePath $FileSector $DestinationPath /MOV /MT:32 /LOG:$RobocopyLog
+					ROBOCOPY $SourcePath $FileSelector $DestinationPath /MOV /MT:32 /LOG:$RobocopyLog
 				}
 			#Update monitoring log
 			LogUpdateTransferEnd -HistoryId $HistoryId -LogFile $RobocopyLog
