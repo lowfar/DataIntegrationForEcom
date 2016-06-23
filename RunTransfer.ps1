@@ -21,18 +21,20 @@ Param(
   [String]$IsLocalCopyRequired
 )
 
-#Varibales populated from the configuration file.
+#Variables populated from the configuration file.
 [string]$Active = ""
 [int]$ProcessId = 0
 [String]$SourcePath = ""
 [String]$DestinationPath  = ""
 [String]$RobocopyLog = ""
+#File selection for ROBOCOPY
+[string]$FileSector = ""
 #Variables used to control execution
 [String]$FileDatetime = ""
 [int]$SourceFileCount = 0
 
 #Load FileTransferFunctions
-. D:\HIP\Scripts\FileTransferFunctions.ps1
+. C:\Deployment\HIP\Test\Scripts\FileTransferFunctions.ps1
 
 
 #Populate variables from Configuration File, uses function from FileTransferFunctions.ps1
@@ -46,6 +48,10 @@ $RobocopyCopyActionLog = GetConfigProperty  -path $ConfigurationFile -setting Pr
 
 #Formated date and time used in generating Logfile names
 $FileDatetime = (Get-Date ).ToUniversalTime().ToString("yyyyMMddThhmmssZ")
+
+#File Selection
+$FileSector = "Load*.*"
+
 
 #check transfer is active , this is a value set in the configuration file
 if ($Active -eq "No")
@@ -74,14 +80,15 @@ elseif ($Active -eq "Yes")
 			#Is a local copy of the files transfered needed
 			if ($IsLocalCopyRequired -eq "Y")
 				{
+					
 					#First ROBOCOPY copies the files for processing
-					ROBOCOPY $SourcePath $DestinationPath /MT:32 /LOG:$RobocopyLog 
+					ROBOCOPY $SourcePath $FileSector $DestinationPath /MT:32 /LOG:$RobocopyLog 
 					#Second ROBOCOPY moves (deletes from source) files to a copy location
-					ROBOCOPY $SourcePath $CopyDestination /MOV /MT:32 /LOG:$RobocopyCopyActionLog
+					ROBOCOPY $SourcePath $FileSector $CopyDestination /MOV /MT:32 /LOG:$RobocopyCopyActionLog
 				}
 			elseif ($IsLocalCopyRequired -eq "N")
 				{
-					ROBOCOPY $SourcePath $DestinationPath /MOV /MT:32 /LOG:$RobocopyLog
+					ROBOCOPY $SourcePath $FileSector $DestinationPath /MOV /MT:32 /LOG:$RobocopyLog
 				}
 			#Update monitoring log
 			LogUpdateTransferEnd -HistoryId $HistoryId -LogFile $RobocopyLog
