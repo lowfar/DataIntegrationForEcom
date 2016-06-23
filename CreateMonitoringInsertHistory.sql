@@ -23,7 +23,7 @@ BEGIN TRANSACTION
 	INSERT INTO Monitoring.History
 	        ( 
 	          ProcessId ,
-	          TransferDate ,
+	          TransferStart ,
 	          FileCount,
 			  Size,
 			  FileSource,
